@@ -9,8 +9,8 @@ import (
 )
 
 func ecrypt(publicKey string, key string) string {
-	// Step 1: Base64-encoded public key string (your provided public key as a string)
-	pubKeyString := publicKey // Your public key in Base64
+	// Step 1: Base64-encoded public key string
+	pubKeyString := publicKey
 
 	// Step 2: Decode the Base64-encoded public key string into bytes
 	pubKeyBytes, err := base64.StdEncoding.DecodeString(pubKeyString)
@@ -38,12 +38,6 @@ func ecrypt(publicKey string, key string) string {
 
 	// Step 6: Encode the encrypted API key in Base64 format
 	encryptedBase64 := base64.StdEncoding.EncodeToString(encryptedData)
-
-	// Output the Base64 encoded encrypted API key
-	// fmt.Println("Base64 Encoded Encrypted API Key:")
-	// fmt.Println(encryptedBase64)
-
-	encrypted = encryptedBase64
 
 	return encryptedBase64
 }

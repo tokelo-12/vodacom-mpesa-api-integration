@@ -7,12 +7,6 @@ import (
 	"net/http"
 )
 
-// {
-// 	"output_ResponseCode": "INS-0",
-// 	"output_ResponseDesc": "Request processed successfully",
-// 	"output_SessionID": "e14b7829a4ee44b4826a9ca12b773e92"
-//   }
-
 type ResponseData struct {
 	Output_ResponseCode string `json:"output_ResponseCode"`
 	Output_ResponseDesc string `json:"output_ResponseDesc"`
@@ -20,6 +14,9 @@ type ResponseData struct {
 }
 
 func getSessionKey() (string, error) {
+
+	encrypted := ecrypt(base64PublicKeyString, app_key)
+
 	url := "https://openapi.m-pesa.com:443/sandbox/ipg/v2/vodacomLES/getSession/"
 
 	client := &http.Client{}

@@ -9,50 +9,41 @@ import (
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
+
+type Response struct {
+	OutputResponseCode             string `json:"output_ResponseCode"`
+	OutputResponseDesc             string `json:"output_ResponseDesc"`
+	OutputTransactionID            string `json:"output_TransactionID"`
+	OutputConversationID           string `json:"output_ConversationID"`
+	OutputThirdPartyConversationID string `json:"output_ThirdPartyConverstionID"`
+}
 
 var app_key = "kxHXi2jfcSJ0nLJtE4e095AmjZTwXXar"
 var base64PublicKeyString = "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEArv9yxA69XQKBo24BaF/D+fvlqmGdYjqLQ5WtNBb5tquqGvAvG3WMFETVUSow/LizQalxj2ElMVrUmzu5mGGkxK08bWEXF7a1DEvtVJs6nppIlFJc2SnrU14AOrIrB28ogm58JjAl5BOQawOXD5dfSk7MaAA82pVHoIqEu0FxA8BOKU+RGTihRU+ptw1j4bsAJYiPbSX6i71gfPvwHPYamM0bfI4CmlsUUR3KvCG24rB6FNPcRBhM3jDuv8ae2kC33w9hEq8qNB55uw51vK7hyXoAa+U7IqP1y6nBdlN25gkxEA8yrsl1678cspeXr+3ciRyqoRgj9RD/ONbJhhxFvt1cLBh+qwK2eqISfBb06eRnNeC71oBokDm3zyCnkOtMDGl7IvnMfZfEPFCfg5QgJVk1msPpRvQxmEsrX9MQRyFVzgy2CWNIb7c+jPapyrNwoUbANlN8adU1m6yOuoX7F49x+OjiG2se0EJ6nafeKUXw/+hiJZvELUYgzKUtMAZVTNZfT8jjb58j8GVtuS+6TM2AutbejaCV84ZK58E2CRJqhmjQibEUO6KPdD7oTlEkFy52Y1uOOBXgYpqMzufNPmfdqqqSM4dU70PO8ogyKGiLAIxCetMjjm6FCMEA3Kc8K0Ig7/XtFm9By6VxTJK1Mg36TlHaZKP6VzVLXMtesJECAwEAAQ=="
 
-var encrypted string
-
-// func main() {
-// 	// 1. Decoding the Base64-encoded Public Key
-// 	decodedKey, err := base64.StdEncoding.DecodeString(base64PublicKeyString)
-// 	if err != nil {
-// 		fmt.Print("Failed to decode base64 string: %v", err)
-// 	}
-
-// 	var pub interface{}
-// 	pub, _ = x509.ParsePKIXPublicKey(decodedKey)
-// 	publicKey := pub.(*rsa.PublicKey)
-
-// 	// 2. Creating an RSA Cipher Instance
-// 	rsaCipher, err := rsa.EncryptOAEP(sha256.New(), rand.Reader, publicKey, []byte(app_key), nil)
-
-// 	if err != nil {
-// 		return
-// 	}
-
-// 	// 3. Encoding the API Key
-// 	encryptedAPIKey := base64.StdEncoding.EncodeToString(rsaCipher)
-// 	fmt.Println("Encrypted API Key:", encryptedAPIKey)
-// }
-
 func main() {
-	ecrypt(base64PublicKeyString, app_key)
 
-	c2bPay()
+	endpoints()
 
 }
 
-func c2bPay() {
+func endpoints() {
+	router := gin.Default()
+
+	router.GET("/c2b", c2bPay)
+	router.Run("localhost:8888")
+}
+
+func c2bPay(c *gin.Context) {
 	// Set up the API endpoint and public key (ensure these are accurate for the API context)
 	apiURL := "https://openapi.m-pesa.com/sandbox/ipg/v2/vodacomLES/c2bPayment/singleStage/"
 	key, err := getSessionKey()
 
 	if err != nil {
-		fmt.Printf("Error : %v", err)
+		fmt.Printf("Failed to get Session-Key: %v", err)
 	}
 
 	apiKey := ecrypt(base64PublicKeyString, key)
@@ -112,4 +103,16 @@ func c2bPay() {
 	fmt.Printf("Status Code: %d\n", resp.StatusCode)
 	// fmt.Println("Headers:", resp.Header)
 	fmt.Printf("Body: %s\n", body)
+
+	//Unmarshal JSON
+
+	var data Response
+
+	error := json.Unmarshal(body, &data)
+
+	if error != nil {
+		fmt.Printf("Error unmarshaling JSON: %v", error)
+	}
+
+	c.JSON(http.StatusOK, data)
 }
