@@ -18,7 +18,11 @@ type Response struct {
 	OutputResponseDesc             string `json:"output_ResponseDesc"`
 	OutputTransactionID            string `json:"output_TransactionID"`
 	OutputConversationID           string `json:"output_ConversationID"`
-	OutputThirdPartyConversationID string `json:"output_ThirdPartyConverstionID"`
+	OutputThirdPartyConversationID string `json:"output_ThirdPartyConversationID"`
+}
+
+type UserData struct {
+	PhoneNumber string `json:"phone_number"`
 }
 
 var app_key = "kxHXi2jfcSJ0nLJtE4e095AmjZTwXXar"
@@ -33,11 +37,21 @@ func main() {
 func endpoints() {
 	router := gin.Default()
 
-	router.GET("/c2b", c2bPay)
+	router.POST("/c2b", c2bPay)
 	router.Run("localhost:8888")
 }
 
 func c2bPay(c *gin.Context) {
+
+	var userInfo UserData
+
+	if err := c.ShouldBindJSON(&userInfo); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error unmarshaling JSON": err.Error()})
+		return
+	}
+
+	MSISDN := userInfo.PhoneNumber
+
 	// Set up the API endpoint and public key (ensure these are accurate for the API context)
 	apiURL := "https://openapi.m-pesa.com/sandbox/ipg/v2/vodacomLES/c2bPayment/singleStage/"
 	key, err := getSessionKey()
@@ -49,11 +63,12 @@ func c2bPay(c *gin.Context) {
 	apiKey := ecrypt(base64PublicKeyString, key)
 
 	// Prepare JSON payload
+	//"000000000001" MSISDN
 	payload := map[string]string{
 		"input_Amount":                   "10",
 		"input_Country":                  "LES",
 		"input_Currency":                 "LSL",
-		"input_CustomerMSISDN":           "000000000001",
+		"input_CustomerMSISDN":           MSISDN,
 		"input_ServiceProviderCode":      "000000",
 		"input_ThirdPartyConversationID": "asv02e5958774f7ba228d83d0d689761",
 		"input_TransactionReference":     "T1234C",
