@@ -15,7 +15,7 @@ type ResponseData struct {
 
 func getSessionKey() (string, error) {
 
-	encrypted := ecrypt(base64PublicKeyString, app_key)
+	encrypted := ecrypt(base64PublicKeyString(), app_key())
 
 	url := "https://openapi.m-pesa.com:443/sandbox/ipg/v2/vodacomLES/getSession/"
 
